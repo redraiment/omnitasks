@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    driver-class-name: "org.postgresql.Driver"
+    url: "jdbc:postgresql://postgres-master/omnitasks"
+    username: "redraiment"
+  graphql:
+    graphiql:
+      enabled: true
+    schema:
+      printer:
+        enabled: true
+
+mybatis:
+  type-handlers-package: "me.zzp.omnitasks.handler"
+  configuration:
+    map-underscore-to-camel-case: true

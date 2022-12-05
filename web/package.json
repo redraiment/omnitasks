@@ -1,0 +1,37 @@
+{
+    "name": "omnitasks",
+    "version": "1.0.0",
+    "description": "Omni Tasks Front End",
+    "main": "index.jsx",
+    "author": "Zhang, Zepeng <redraiment@gmail.com>",
+    "license": "MIT",
+    "private": true,
+    "dependencies": {
+        "@ant-design/icons": "^4.8.0",
+        "antd": "^5.0.3",
+        "cross-fetch": "^3.1.5",
+        "moment": "^2.29.4",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-router-dom": "^6.4.4",
+        "recoil": "^0.7.6"
+    },
+    "devDependencies": {
+        "http-proxy-middleware": "^2.0.6",
+        "react-scripts": "^5.0.1",
+        "sass": "^1.56.1",
+        "sass-loader": "^13.2.0"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+}
