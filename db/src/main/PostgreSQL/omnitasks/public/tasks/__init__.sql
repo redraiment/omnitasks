@@ -6,5 +6,3 @@ create table tasks (
   updated_at timestamp not null default current_timestamp,
   completed_at timestamp
 );
-
-create index concurrently on tasks (completed_at asc nulls first, id asc);
