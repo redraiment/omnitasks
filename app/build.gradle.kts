@@ -19,7 +19,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-graphql")
-    implementation("org.slf4j:slf4j-api")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.postgresql:postgresql")
     implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.0")
 }

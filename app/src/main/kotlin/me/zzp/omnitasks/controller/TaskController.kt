@@ -9,7 +9,10 @@ import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.Arguments
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.graphql.data.method.annotation.SubscriptionMapping
 import org.springframework.stereotype.Controller
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Sinks
 import java.util.Date
 
 @Controller
@@ -22,37 +25,48 @@ class TaskController {
     @Autowired
     private lateinit var taskMapper: TaskMapper
 
+    private val sink = Sinks.many().multicast().directBestEffort<List<Task>>()
+
     @QueryMapping
-    fun tasks(): List<Task> = taskMapper.list()
+    fun tasks() = taskMapper.list()
 
     @MutationMapping
-    fun create(): List<Task> = taskMapper.create().let {
+    fun create() = taskMapper.create().also {
         log.info("create task {}", it)
-        taskMapper.list()
+        publish()
     }
 
     @MutationMapping
-    fun remove(@Argument id: Long): List<Task> = taskMapper.remove(id).let {
+    fun remove(@Argument id: Long) = taskMapper.remove(id).also {
         log.info("delete task {}", it)
-        taskMapper.list()
+        publish()
     }
 
     @MutationMapping
-    fun setTitle(@Arguments task: Task) = taskMapper.setTitle(task).let {
+    fun setTitle(@Arguments task: Task) = taskMapper.setTitle(task).also {
         log.info("update task({}) to {}", task, it)
-        taskMapper.list()
+        publish()
     }
 
     @MutationMapping
-    fun setEditing(@Arguments task: Task): List<Task> = taskMapper.setEditing(task).let {
+    fun setEditing(@Arguments task: Task) = taskMapper.setEditing(task).also {
         log.info("edit task({}) to {}", task, it)
-        taskMapper.list()
+        publish()
     }
 
     @MutationMapping
-    fun setCompleted(@Argument id: Long, @Argument completed: Boolean): List<Task> {
-        val it = taskMapper.setCompleted(Task(id = id, completedAt = if (completed) Date() else null))
+    fun setCompleted(
+        @Argument id: Long,
+        @Argument completed: Boolean
+    ) = taskMapper.setCompleted(Task(id = id, completedAt = if (completed) Date() else null)).also {
         log.info("toggle task({}) to {}", id, it)
-        return taskMapper.list()
+        publish()
+    }
+
+    @SubscriptionMapping
+    fun watch(): Flux<List<Task>> = sink.asFlux()
+
+    private fun publish() {
+        sink.tryEmitNext(taskMapper.list())
     }
 }

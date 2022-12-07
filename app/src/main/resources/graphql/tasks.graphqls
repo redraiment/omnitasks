@@ -3,11 +3,15 @@ type Query {
 }
 
 type Mutation {
-    create: [Task!]!
-    remove(id: Int!): [Task!]!
-    setTitle(id: Int!, title: String!): [Task!]!
-    setEditing(id: Int!, editing: Boolean!): [Task!]!
-    setCompleted(id: Int!, completed: Boolean!): [Task!]!
+    create: Task
+    remove(id: Int!): Task
+    setTitle(id: Int!, title: String! = ""): Task
+    setEditing(id: Int!, editing: Boolean! = true): Task
+    setCompleted(id: Int!, completed: Boolean! = true): Task
+}
+
+type Subscription {
+    watch: [Task!]!
 }
 
 type Task {

@@ -9,6 +9,8 @@ spring:
     schema:
       printer:
         enabled: true
+    websocket:
+      path: "/graphql"
 
 mybatis:
   type-handlers-package: "me.zzp.omnitasks.handler"

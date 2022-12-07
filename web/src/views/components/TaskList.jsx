@@ -4,16 +4,16 @@ import { Table } from 'antd';
 import EditableTask from 'views/components/EditableTask';
 import Operators from 'views/components/Operators';
 import Toolbar from 'views/components/Toolbar';
-import { tasksState } from 'data/state';
-import { completedKeys } from 'data/selectors';
-import { useLoad, useSetCompleted } from 'data/hooks';
+import state from 'data/state';
+import { useLoad, useWatchTasks, useSetCompleted } from 'data/hooks';
 
 export default () => {
-  const tasks = useRecoilValue(tasksState);
-  const keys = useRecoilValue(completedKeys);
+  const tasks = useRecoilValue(state.tasks);
+  const keys = useRecoilValue(state.completedKeys);
   const setCompleted = useSetCompleted();
   const load = useLoad();
 
+  useWatchTasks();
   useEffect(() => {
     load();
   }, []);

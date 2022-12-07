@@ -1,55 +1,112 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useSetRecoilState } from 'recoil';
-import { graph } from 'middlewares/http';
-import { tasksState } from "data/state";
-
-const useGraphQL = (query) => {
-  const setTasks = useSetRecoilState(tasksState);
-  const name = useMemo(() => query.replace(/^[^{]*\{\s*/, '').replace(/[^a-zA-Z].*$/, ''), [query]);
-  return useCallback((variables = null) => {
-    graph(query, variables).then(data => {
-      const tasks = data[name]?.map(task => ({
-        key: `${task.id}`,
-        ...task
-      })) || [];
-      setTasks(tasks);
-    });
-  }, [setTasks, name]);
-};
+import { gql, useLazyQuery, useMutation, useSubscription } from '@apollo/client';
+import state from "data/state";
 
 export const useLoad = () => {
-  return useGraphQL('{ tasks { id, title, editing, completed } }');
+  const setTasks = useSetRecoilState(state.tasks);
+  const [fetchTasks] = useLazyQuery(gql`{
+    tasks {
+      id
+      title
+      editing
+      completed
+    }
+  }`);
+  return useCallback(() => {
+    fetchTasks().then(({ loading, data }) => {
+      if (!loading && data) {
+        setTasks(data?.tasks?.map(task => ({
+          key: `${task.id}`,
+          ...task,
+        })));
+      }
+    });
+  }, [fetchTasks, setTasks]);
+}
+
+export const useWatchTasks = () => {
+  const setTasks = useSetRecoilState(state.tasks);
+  const { loading, data } = useSubscription(gql`
+    subscription {
+      watch {
+        id
+        title
+        editing
+        completed
+      }
+    }
+  `);
+  useEffect(() => {
+    if (!loading && data) {
+      setTasks(data?.watch?.map(task => ({
+        key: `${task.id}`,
+        ...task,
+      })));
+    }
+  }, [setTasks, loading, data]);
 };
 
 export const useCreate = () => {
-  return useGraphQL('mutation { create { id, title, editing, completed } }');
+  const [create] = useMutation(gql`mutation {
+    create {
+      id
+    }
+  }`);
+  return useCallback(() => {
+    create().then(() => {});
+  }, [create]);
 };
 
 export const useRemove = () => {
-  const gq = useGraphQL('mutation Remove($id: Int!) { remove(id: $id) { id, title, editing, completed } }');
+  const [remove] = useMutation(gql`mutation Remove($id: Int!) {
+    remove(id: $id) {
+      id
+    }
+  }`);
   return useCallback((id) => {
-    gq({ id });
-  }, [gq]);
+    remove({ variables: { id } }).then(() => {});
+  }, [remove]);
 };
 
 export const useSetTitle = () => {
-  const gq = useGraphQL('mutation setTitle($id: Int!, $title: String!) { setTitle(id: $id, title: $title) { id, title, editing, completed } }');
+  const [setTitle] = useMutation(gql`
+    mutation setTitle($id: Int!, $title: String!) {
+      setTitle(id: $id, title: $title) {
+        id
+        title
+      }
+    }
+  `);
   return useCallback((id, title) => {
-    gq({ id, title });
-  }, [gq]);
+    setTitle({ variables: { id, title } }).then(() => {});
+  }, [setTitle]);
 };
 
 export const useSetEditing = () => {
-  const gq = useGraphQL('mutation setEditing($id: Int!, $editing: Boolean!) { setEditing(id: $id, editing: $editing) { id, title, editing, completed } }');
+  const [setEditing] = useMutation(gql`
+    mutation setEditing($id: Int!, $editing: Boolean!) {
+      setEditing(id: $id, editing: $editing) {
+        id
+        editing
+      }
+    }
+  `);
   return useCallback((id, editing) => {
-    console.log('set editing')
-    gq({ id, editing });
-  }, [gq]);
+    setEditing({ variables: { id, editing } }).then(() => {});
+  }, [setEditing]);
 };
 
 export const useSetCompleted = () => {
-  const gq = useGraphQL('mutation setCompleted($id: Int!, $completed: Boolean!) { setCompleted(id: $id, completed: $completed) { id, title, editing, completed } }');
+  const [setCompleted] = useMutation(gql`
+    mutation setCompleted($id: Int!, $completed: Boolean!) {
+      setCompleted(id: $id, completed: $completed) {
+        id
+        completed
+      }
+    }
+  `);
   return useCallback((id, completed) => {
-    gq({ id, completed });
-  }, [gq]);
+    setCompleted({ variables: { id, completed } }).then(() => {});
+  }, [setCompleted]);
 };
